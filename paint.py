@@ -72,9 +72,9 @@ def renderText(bSize):
     colorText = myfont.render('Colour:', True, inverseBackground, backgroundCol)
     brushText = myfont.render('Brush Size: {}x'.format(bSize), True, inverseBackground, backgroundCol)
     if cM:
-        circleText = myfont.render('Circle Mode', True, inverseBackground, backgroundCol)
+        modeText = myfont.render('Circle Mode', True, inverseBackground, backgroundCol)
     elif lM:
-        circleText = myfont.render('Line Mode', True, inverseBackground, backgroundCol)
+        modeText = myfont.render('Line Mode', True, inverseBackground, backgroundCol)
         if lT == 0:
             pointText = myfont.render('Select P1', True, inverseBackground, backgroundCol)
             textSurface.blit(pointText, (0, 30))
@@ -82,10 +82,10 @@ def renderText(bSize):
             pointText = myfont.render('Select P2', True, inverseBackground, backgroundCol)
             textSurface.blit(pointText, (0, 30))
     elif sM:
-         circleText = myfont.render('Square Mode', True, inverseBackground, backgroundCol)
+         modeText = myfont.render('Square Mode', True, inverseBackground, backgroundCol)
     textSurface.blit(colorText, (0, 0))
     textSurface.blit(brushText, (0, 10))
-    textSurface.blit(circleText, (0, 20))
+    textSurface.blit(modeText, (0, 20))
     pygame.draw.rect(textSurface, brushCol, pygame.Rect((35, 0), (10,10)))
 
 def updateText():
@@ -224,10 +224,7 @@ while True:
                     updateText()
             
         if pygame.mouse.get_pressed()[2]:
-            if not cM:
-                pygame.draw.rect(screen, backgroundCol, pygame.Rect((mx-5, my-5), (brushThickness,brushThickness))) # on mouse button right pressed down, draw a tiny square in the colour of the background
-            else:
-                pygame.draw.circle(screen, brushCol, (mx-5, my-5), (brushThickness, brushThickness))
+            pygame.draw.rect(screen, backgroundCol, pygame.Rect((mx-5, my-5), (brushThickness,brushThickness))) # on mouse button right pressed down, draw a tiny square in the colour of the background
         scr.blit(screen, (0, 0)) # display everything on the image layer
         scr.blit(textSurface, (0, 0)) # display everything on the text layer
 
