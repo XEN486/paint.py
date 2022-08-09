@@ -1,4 +1,5 @@
 import os
+import time
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"  # hide pygame prompt
 import pygame, sys, random
 from platform import python_version
@@ -17,7 +18,11 @@ sM = True # square mode
 lT = 0 # times mouse has been clicked while in line mode
 p1 = (0, 0)
 
+mx = 0
+my = 0
+
 pygame.font.init() # this is needed just to make some stuff work
+
 
 def save():
     files = [('PNG Files', '*.png'),
@@ -43,7 +48,7 @@ brushThickness = 10 # brush thickness
 scr = pygame.display.set_mode(size) # set res
 
 screen = pygame.surface.Surface(size)
-textSurface = pygame.surface.Surface((80, 40))
+textSurface = pygame.surface.Surface((85, 50))
 
 clock = pygame.time.Clock() # create a clock
 icon = pygame.image.load('./Resources/icon.png') # load our icon
@@ -54,7 +59,6 @@ paintMsgs = ['Paint lives!', 'Hello, paint!', 'The world is made of paint!', 'Pa
 paintMsg = random.choice(paintMsgs) # set the first line printed by console
 
 pygame.display.set_icon(icon) # set the icon
-pygame.display.set_caption('paint.py') # set the title
     
 backgroundCol = (255,255,255)
 brushCol = (0,0,0)
@@ -71,33 +75,47 @@ def renderText(bSize):
     textSurface.fill(backgroundCol)
     colorText = myfont.render('Colour:', True, inverseBackground, backgroundCol)
     brushText = myfont.render('Brush Size: {}x'.format(bSize), True, inverseBackground, backgroundCol)
+    mposText = myfont.render('X: {}, Y: {}'.format(mx, my), True, inverseBackground, backgroundCol)
     if cM:
         modeText = myfont.render('Circle Mode', True, inverseBackground, backgroundCol)
+        textSurface.blit(mposText, (0, 30))
     elif lM:
         modeText = myfont.render('Line Mode', True, inverseBackground, backgroundCol)
         if lT == 0:
             pointText = myfont.render('Select P1', True, inverseBackground, backgroundCol)
             textSurface.blit(pointText, (0, 30))
+            textSurface.blit(mposText, (0, 40))
         elif lT == 1:
             pointText = myfont.render('Select P2', True, inverseBackground, backgroundCol)
             textSurface.blit(pointText, (0, 30))
+            textSurface.blit(mposText, (0, 40))
     elif sM:
          modeText = myfont.render('Square Mode', True, inverseBackground, backgroundCol)
+         textSurface.blit(mposText, (0, 30))
     textSurface.blit(colorText, (0, 0))
     textSurface.blit(brushText, (0, 10))
     textSurface.blit(modeText, (0, 20))
     pygame.draw.rect(textSurface, brushCol, pygame.Rect((35, 0), (10,10)))
 
 def updateText():
-    if brushThickness != 10:
-        renderText(brushThickness-10)
-    else:
+    if brushThickness == 10:
         renderText(1)
 
-print(f'{paintMsg}\n\nWARNING: Changing background colour clears the screen!\n\nPython Version: {python_version()}\nSDL Version: {sdlVer}\nPygame Version: {pygame.version.ver}\n\nLeft Click - brush tool\nRight Click - eraser tool\nW - activate square mode\nE - activate line mode\nR - activate circle drawing mode\nC - clear screen\nP - pick brush colour\nB - pick background colour\nS - save image\nI - import image\nO - Pick a colour on screen\n1-0 - various brush sizes')
+    elif brushThickness == 5:
+        renderText(0.5)
 
-updateText()
+    elif brushThickness == 2.5:
+        renderText(0.25)
+    
+    else:
+        renderText(brushThickness-10)
+
+pygame.display.set_caption('Paint.py')
+
+print(f'{paintMsg}\n\nWARNING: Changing background colour clears the screen!\n\nPython Version: {python_version()}\nSDL Version: {sdlVer}\nPygame Version: {pygame.version.ver}\n\nLeft Click - brush tool\nRight Click - eraser tool\nW - activate square mode\nE - activate line mode\nR - activate circle drawing mode\nC - clear screen\nP - pick brush colour\nB - pick background colour\nS - save image\nI - import image\nO - Pick a colour on screen\n1-= - various brush sizes')
+
 while True:
+    updateText()
     for event in pygame.event.get():
         if event.type == pygame.QUIT: # quit event
             pygame.quit()
@@ -141,42 +159,50 @@ while True:
                 brushCol = (colour[0], colour[1], colour[2])
 
             if event.key == pygame.K_1:
-                brushThickness = 10
+                brushThickness = 2.5
                 updateText()
 
             if event.key == pygame.K_2:
-                brushThickness = 15
+                brushThickness = 5
                 updateText()
 
             if event.key == pygame.K_3:
-                brushThickness = 20
+                brushThickness = 10
                 updateText()
 
             if event.key == pygame.K_4:
-                brushThickness = 25
+                brushThickness = 15
                 updateText()
 
             if event.key == pygame.K_5:
-                brushThickness = 30
+                brushThickness = 20
                 updateText()
 
             if event.key == pygame.K_6:
-                brushThickness = 35
+                brushThickness = 25
                 updateText()
 
             if event.key == pygame.K_7:
-                brushThickness = 40
+                brushThickness = 30
                 updateText()
 
             if event.key == pygame.K_8:
-                brushThickness = 45
+                brushThickness = 35
                 updateText()
 
             if event.key == pygame.K_9:
-                brushThickness = 50
+                brushThickness = 40
                 updateText()
 
             if event.key == pygame.K_0:
+                brushThickness = 45
+                updateText()
+
+            if event.key == pygame.K_MINUS:
+                brushThickness = 50
+                updateText()
+
+            if event.key == pygame.K_EQUALS:
                 brushThickness = 55
                 updateText()
 
