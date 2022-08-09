@@ -245,7 +245,7 @@ while True:
                     updateText()
                     p1 = (mx, my)
                 elif lT == 2:
-                    pygame.draw.line(screen, brushCol, p1, (mx, my), brushThickness)
+                    pygame.draw.line(screen, brushCol, p1, (mx, my), int(brushThickness))
                     lT = 0
                     updateText()
             
