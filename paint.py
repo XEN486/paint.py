@@ -14,6 +14,9 @@ root.withdraw() # hide tk window
 cM = False # circle mode
 lM = False # line mode
 sM = True # square mode
+fM = False # fill mode
+
+hidden = False # wysiwyg
 
 lT = 0 # times mouse has been clicked while in line mode
 p1 = (0, 0)
@@ -23,6 +26,35 @@ my = 0
 
 pygame.font.init() # this is needed just to make some stuff work
 
+
+def flood_fill(surface, position, fill_color):
+    fill_color = surface.map_rgb(fill_color)  # Convert the color to mapped integer value.
+    surf_array = pygame.surfarray.pixels2d(surface)  # Create an array from the surface.
+    current_color = surf_array[position]  # Get the mapped integer color value.
+
+    # 'frontier' is a list where we put the pixels that's we haven't checked. Imagine that we first check one pixel and 
+    # then expand like rings on the water. 'frontier' are the pixels on the edge of the pool of pixels we have checked.
+    #
+    # During each loop we get the position of a pixel. If that pixel contains the same color as the ones we've checked
+    # we paint it with our 'fill_color' and put all its neighbours into the 'frontier' list. If not, we check the next
+    # one in our list, until it's empty.
+
+    frontier = [position]
+    while len(frontier) > 0:
+        x, y = frontier.pop()
+        try:  # Add a try-except block in case the position is outside the surface.
+            if surf_array[x, y] != current_color:
+                continue
+        except IndexError:
+            continue
+        surf_array[x, y] = fill_color
+        # Then we append the neighbours of the pixel in the current position to our 'frontier' list.
+        frontier.append((x + 1, y))  # Right.
+        frontier.append((x - 1, y))  # Left.
+        frontier.append((x, y + 1))  # Down.
+        frontier.append((x, y - 1))  # Up.
+
+    pygame.surfarray.blit_array(surface, surf_array)
 
 def save():
     files = [('PNG Files', '*.png'),
@@ -48,7 +80,8 @@ brushThickness = 10 # brush thickness
 scr = pygame.display.set_mode(size) # set res
 
 screen = pygame.surface.Surface(size)
-textSurface = pygame.surface.Surface((85, 50))
+textSurface = pygame.surface.Surface((85, 50), flags=pygame.SRCALPHA)
+cursorSurface = pygame.surface.Surface(size, flags=pygame.SRCALPHA)
 
 clock = pygame.time.Clock() # create a clock
 icon = pygame.image.load('./Resources/icon.png') # load our icon
@@ -71,8 +104,8 @@ sdlVer += str(pygame.get_sdl_version()[1]) + "." # get second version num
 sdlVer += str(pygame.get_sdl_version()[2]) # get third version num
 
 def renderText(bSize):
-    inverseBackground = (255-backgroundCol[0], 255-backgroundCol[1], 255-backgroundCol[2])
     textSurface.fill(backgroundCol)
+    inverseBackground = (255-backgroundCol[0], 255-backgroundCol[1], 255-backgroundCol[2])
     colorText = myfont.render('Colour:', True, inverseBackground, backgroundCol)
     brushText = myfont.render('Brush Size: {}x'.format(bSize), True, inverseBackground, backgroundCol)
     mposText = myfont.render('X: {}, Y: {}'.format(mx, my), True, inverseBackground, backgroundCol)
@@ -90,8 +123,11 @@ def renderText(bSize):
             textSurface.blit(pointText, (0, 30))
             textSurface.blit(mposText, (0, 40))
     elif sM:
-         modeText = myfont.render('Square Mode', True, inverseBackground, backgroundCol)
-         textSurface.blit(mposText, (0, 30))
+        modeText = myfont.render('Square Mode', True, inverseBackground, backgroundCol)
+        textSurface.blit(mposText, (0, 30))
+    elif fM:
+        modeText = myfont.render('Fill Mode', True, inverseBackground, backgroundCol)
+        textSurface.blit(mposText, (0, 30))
     textSurface.blit(colorText, (0, 0))
     textSurface.blit(brushText, (0, 10))
     textSurface.blit(modeText, (0, 20))
@@ -110,12 +146,23 @@ def updateText():
     else:
         renderText(brushThickness-10)
 
-pygame.display.set_caption('Paint.py')
+pygame.display.set_caption('paint.py')
 
-print(f'{paintMsg}\n\nWARNING: Changing background colour clears the screen!\n\nPython Version: {python_version()}\nSDL Version: {sdlVer}\nPygame Version: {pygame.version.ver}\n\nLeft Click - brush tool\nRight Click - eraser tool\nW - activate square mode\nE - activate line mode\nR - activate circle drawing mode\nC - clear screen\nP - pick brush colour\nB - pick background colour\nS - save image\nI - import image\nO - Pick a colour on screen\n1-= - various brush sizes')
+print(f'{paintMsg}\n\nWARNING: Changing background colour clears the screen!\n\nPython Version: {python_version()}\nSDL Version: {sdlVer}\nPygame Version: {pygame.version.ver}\n\nLeft Click - brush tool\nRight Click - eraser tool\nF - enable/disable fill tool\nH - enable/disable wysiwyg mode\nW - activate square mode\nE - activate line mode\nR - activate circle drawing mode\nC - clear screen\nP - pick brush colour\nB - pick background colour\nS - save image\nI - import image\nO - Pick a colour on screen\n1-= - various brush sizes')
 
 while True:
     updateText()
+    if cM:
+        pygame.draw.circle(cursorSurface, brushCol, (mx-5, my-5), brushThickness)
+    elif lM:
+        if lT == 1:
+            #pygame.draw.line(screen, brushCol, p1, (mx, my), int(brushThickness))
+            pygame.draw.line(cursorSurface, brushCol, p1, (mx, my), int(brushThickness))
+        else:
+            pygame.draw.rect(cursorSurface, brushCol, pygame.Rect((mx-5, my-5), (brushThickness, brushThickness)))
+    else:
+        pygame.draw.rect(cursorSurface, brushCol, pygame.Rect((mx-5, my-5), (brushThickness, brushThickness)))
+    cursorSurface.set_alpha(50)
     for event in pygame.event.get():
         if event.type == pygame.QUIT: # quit event
             pygame.quit()
@@ -219,8 +266,8 @@ while True:
             if event.key == pygame.K_e:
                 cM = False
                 sM = False
+                fM = False
                 if lM:
-                    lM = False
                     sM = True
                 else:
                     lM = True
@@ -230,6 +277,22 @@ while True:
                 cM = False
                 lM = False
                 sM = True
+                updateText()
+
+            if event.key == pygame.K_h:
+                hidden = not hidden
+                if hidden:
+                    textSurface.set_alpha(0)
+                else:
+                    textSurface.set_alpha(255)
+
+            if event.key == pygame.K_f:
+                cM = False
+                sM = False
+                lM = False
+                fM = not fM
+                if not fM:
+                    sM = True
                 updateText()
 
         mx, my = pygame.mouse.get_pos() # mouse x pos, mouse y pos
@@ -248,12 +311,16 @@ while True:
                     pygame.draw.line(screen, brushCol, p1, (mx, my), int(brushThickness))
                     lT = 0
                     updateText()
-            
+
+            elif fM:
+                flood_fill(screen, (mx, my), brushCol)
         if pygame.mouse.get_pressed()[2]:
             pygame.draw.rect(screen, backgroundCol, pygame.Rect((mx-5, my-5), (brushThickness,brushThickness))) # on mouse button right pressed down, draw a tiny square in the colour of the background
         scr.blit(screen, (0, 0)) # display everything on the image layer
         scr.blit(textSurface, (0, 0)) # display everything on the text layer
+        scr.blit(cursorSurface, (0, 0)) # display transparent cursor
 
         pygame.display.flip()
+        cursorSurface.fill((0,0,0,0))
         clock.tick()
         
