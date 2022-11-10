@@ -27,7 +27,7 @@ my = 0
 pygame.font.init() # this is needed just to make some stuff work
 
 
-def flood_fill(surface, position, fill_color):
+def flood_fill(surface, position, fill_color, size):
     fill_color = surface.map_rgb(fill_color)  # Convert the color to mapped integer value.
     surf_array = pygame.surfarray.pixels2d(surface)  # Create an array from the surface.
     current_color = surf_array[position]  # Get the mapped integer color value.
@@ -42,6 +42,10 @@ def flood_fill(surface, position, fill_color):
     frontier = [position]
     while len(frontier) > 0:
         x, y = frontier.pop()
+        if x > size[0] or x < 0:
+            continue
+        if y > size[1] or y < 0:
+            continue
         try:  # Add a try-except block in case the position is outside the surface.
             if surf_array[x, y] != current_color:
                 continue
@@ -49,10 +53,11 @@ def flood_fill(surface, position, fill_color):
             continue
         surf_array[x, y] = fill_color
         # Then we append the neighbours of the pixel in the current position to our 'frontier' list.
-        frontier.append((x + 1, y))  # Right.
-        frontier.append((x - 1, y))  # Left.
-        frontier.append((x, y + 1))  # Down.
+        
         frontier.append((x, y - 1))  # Up.
+        frontier.append((x, y + 1))  # Down.
+        frontier.append((x - 1, y))  # Left.
+        frontier.append((x + 1, y))  # Right.
 
     pygame.surfarray.blit_array(surface, surf_array)
 
@@ -313,7 +318,7 @@ while True:
                     updateText()
 
             elif fM:
-                flood_fill(screen, (mx, my), brushCol)
+                flood_fill(screen, (mx, my), brushCol, size)
         if pygame.mouse.get_pressed()[2]:
             pygame.draw.rect(screen, backgroundCol, pygame.Rect((mx-5, my-5), (brushThickness,brushThickness))) # on mouse button right pressed down, draw a tiny square in the colour of the background
         scr.blit(screen, (0, 0)) # display everything on the image layer
