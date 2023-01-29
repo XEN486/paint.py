@@ -82,7 +82,7 @@ with open('options.cfg', 'r') as f:
 options = options.split(' ')
 size = (int(options[0]), int(options[1])) # width, height
 brushThickness = 10 # brush thickness
-scr = pygame.display.set_mode(size) # set res
+scr = pygame.display.set_mode(size, vsync=1) # set res
 
 screen = pygame.surface.Surface(size)
 textSurface = pygame.surface.Surface((85, 50), flags=pygame.SRCALPHA)
@@ -329,5 +329,5 @@ while True:
 
     pygame.display.flip()
     cursorSurface.fill((0,0,0,0))
-    clock.tick(30)
+    clock.tick(165)
         
