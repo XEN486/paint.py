@@ -300,32 +300,34 @@ while True:
                     sM = True
                 updateText()
 
-        mx, my = pygame.mouse.get_pos() # mouse x pos, mouse y pos
-        if pygame.mouse.get_pressed()[0]:
-            if cM:
-                pygame.draw.circle(screen, brushCol, (mx-5, my-5), brushThickness)
-            elif sM:
-                pygame.draw.rect(screen, brushCol, pygame.Rect((mx-5, my-5), (brushThickness,brushThickness))) # on mouse button left pressed down, draw a tiny square
-            elif lM:
+    mx, my = pygame.mouse.get_pos() # mouse x pos, mouse y pos
+    if pygame.mouse.get_pressed()[0]:
+        if cM:
+            pygame.draw.circle(screen, brushCol, (mx-5, my-5), brushThickness)
+        elif sM:
+            pygame.draw.rect(screen, brushCol, pygame.Rect((mx-5, my-5), (brushThickness,brushThickness))) # on mouse button left pressed down, draw a tiny square
+        elif lM:
+            updateText()
+            lT += 1
+            if lT == 1:
                 updateText()
-                lT += 1
-                if lT == 1:
-                    updateText()
-                    p1 = (mx, my)
-                elif lT == 2:
-                    pygame.draw.line(screen, brushCol, p1, (mx, my), int(brushThickness))
-                    lT = 0
-                    updateText()
+                p1 = (mx, my)
+            elif lT == 2:
+                pygame.draw.line(screen, brushCol, p1, (mx, my), int(brushThickness))
+                lT = 0
+                updateText()
 
-            elif fM:
-                flood_fill(screen, (mx, my), brushCol, size)
-        if pygame.mouse.get_pressed()[2]:
-            pygame.draw.rect(screen, backgroundCol, pygame.Rect((mx-5, my-5), (brushThickness,brushThickness))) # on mouse button right pressed down, draw a tiny square in the colour of the background
-        scr.blit(screen, (0, 0)) # display everything on the image layer
-        scr.blit(textSurface, (0, 0)) # display everything on the text layer
-        scr.blit(cursorSurface, (0, 0)) # display transparent cursor
+        elif fM:
+            flood_fill(screen, (mx, my), brushCol, size)
+    if pygame.mouse.get_pressed()[2]:
+        pygame.draw.rect(screen, backgroundCol, pygame.Rect((mx-5, my-5), (brushThickness,brushThickness))) # on mouse button right pressed down, draw a tiny square in the colour of the background
+    scr.blit(screen, (0, 0)) # display everything on the image layer
+    scr.blit(textSurface, (0, 0)) # display everything on the text layer
+    scr.blit(cursorSurface, (0, 0)) # display transparent cursor
+    fps = int(clock.get_fps())
+    pygame.display.set_caption(f'paint.py, fps: {fps}')
 
-        pygame.display.flip()
-        cursorSurface.fill((0,0,0,0))
-        clock.tick()
+    pygame.display.flip()
+    cursorSurface.fill((0,0,0,0))
+    clock.tick(30)
         
